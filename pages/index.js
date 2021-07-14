@@ -22,17 +22,31 @@ function ProfileSidebar(props) {
 
 export default function Home() {
   const githubUser = 'legermano';
-  const pessoasFavoritas = [
-    {id:'1',title:'juunegreiros',image:'https://github.com/juunegreiros.png'},
-    {id:'2',title:'omariosouto',image:'https://github.com/omariosouto.png'},
-    {id:'3',title:'peas',image:'https://github.com/peas.png'},
-    {id:'4',title:'algocompretto',image:'https://github.com/algocompretto.png'}
+  const communityPerson = [
+    {title:'juunegreiros',image:'https://github.com/juunegreiros.png'},
+    {title:'omariosouto',image:'https://github.com/omariosouto.png'},
+    {title:'peas',image:'https://github.com/peas.png'},
+    {title:'algocompretto',image:'https://github.com/algocompretto.png'}
   ];
-  const [comunidades, setComunidades] = React.useState([{
-    id: '12312312312',
+  const [communities, setCommunities] = React.useState([{
     title: 'Eu odeio acordar cedo',
     image: 'https://alurakut.vercel.app/capa-comunidade-01.jpg'
   }]);
+  const [followers, setFollowers] = React.useState([]);
+
+  React.useEffect(function() {
+    fetch(`https://api.github.com/users/${githubUser}/followers`)
+    .then(function (serverResponse) {
+      return serverResponse.json();
+    })
+    .then(function (completeResponse) {
+      let aFollowers = [];
+      completeResponse.map((follower) => {
+        aFollowers = [...aFollowers, {title: follower.login, image: follower.avatar_url}]
+      });
+      setFollowers(aFollowers);
+    })
+  }, []);
 
   return (
     <>
@@ -58,16 +72,15 @@ export default function Home() {
               e.preventDefault();
               const formData = new FormData(e.target);
 
-              const comunidade = {
-                id: new Date().toISOString,
+              const community = {
                 title: formData.get('title'),
                 image: formData.get('image')
                 //? Random image
                 // image: 'https://picsum.photos/300?'+Math.floor(Math.random() * 10000)
               }
 
-              setComunidades([...comunidades,comunidade])
-              console.log(comunidades);
+              setCommunities([...communities,community])
+              console.log(communities);
             }}>
               <div>
                 <input
@@ -92,8 +105,9 @@ export default function Home() {
           </Box>
       </div>
       <div className="profileRelationsArea" style={{ gridArea: 'profileRelationsArea' }}>
-        <CardsBox boxName={'Comunidades'} itemsList={comunidades} />
-        <CardsBox boxName={'Pessoas da comunidade'} itemsList={pessoasFavoritas} />
+        <CardsBox title={'Seguidores'} itemsList={followers} />
+        <CardsBox title={'Comunidades'} itemsList={communities} />
+        <CardsBox title={'Pessoas da comunidade'} itemsList={communityPerson} />
       </div>
     </MainGrid>
     </>
