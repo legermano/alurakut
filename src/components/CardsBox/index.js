@@ -1,6 +1,6 @@
 import { ProfileRelationsBoxWrapper } from '../ProfileRelations';
 
-export function CardsBox({ title, itemsList }) {
+export function CardsBox({ title, link, itemsList }) {
   return (
     <ProfileRelationsBoxWrapper>
       <h2 className="smallTitle">
@@ -11,9 +11,9 @@ export function CardsBox({ title, itemsList }) {
         {
           itemsList.slice(0,6).map((item) => {
             return (
-              <li key={new Date().toISOString}>
-                <a href={`/users/${item.title}`}>
-                  <img src={item.image}/>
+              <li key={item.id}>
+                <a href={`${link}/${item.id}`}>
+                  <img src={item.imageUrl}/>
                   <span>{item.title}</span>
                 </a>
               </li>

@@ -22,19 +22,11 @@ function ProfileSidebar(props) {
 
 export default function Home() {
   const githubUser = 'legermano';
-  const communityPerson = [
-    {title:'juunegreiros',image:'https://github.com/juunegreiros.png'},
-    {title:'omariosouto',image:'https://github.com/omariosouto.png'},
-    {title:'peas',image:'https://github.com/peas.png'},
-    {title:'algocompretto',image:'https://github.com/algocompretto.png'}
-  ];
-  const [communities, setCommunities] = React.useState([{
-    title: 'Eu odeio acordar cedo',
-    image: 'https://alurakut.vercel.app/capa-comunidade-01.jpg'
-  }]);
+  const [communities, setCommunities] = React.useState([]);
   const [followers, setFollowers] = React.useState([]);
 
   React.useEffect(function() {
+    //Github followers
     fetch(`https://api.github.com/users/${githubUser}/followers`)
     .then(function (serverResponse) {
       return serverResponse.json();
@@ -42,10 +34,45 @@ export default function Home() {
     .then(function (completeResponse) {
       let aFollowers = [];
       completeResponse.map((follower) => {
-        aFollowers = [...aFollowers, {title: follower.login, image: follower.avatar_url}]
+        aFollowers = [
+          ...aFollowers, 
+          {
+            id: follower.id, 
+            title: follower.login, 
+            imageUrl: follower.avatar_url
+          }
+        ]
       });
       setFollowers(aFollowers);
     })
+
+    //DatoCMS
+    fetch(
+      'https://graphql.datocms.com/', 
+      { 
+        method: 'POST',
+        headers: {
+          'Authorization': process.env.DATOCMS_READONLY_API_KEY,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({ "query": 
+          `query {
+            allCommunities {
+              id
+              title
+              imageUrl
+              creatorSlug
+            }
+          }`
+        })
+      }
+    )
+    .then((response) => response.json())
+    .then((completeResponse) => {
+      setCommunities(completeResponse.data.allCommunities);
+    })
+
   }, []);
 
   return (
@@ -73,14 +100,23 @@ export default function Home() {
               const formData = new FormData(e.target);
 
               const community = {
+                id: new Date().toISOString,
                 title: formData.get('title'),
-                image: formData.get('image')
-                //? Random image
-                // image: 'https://picsum.photos/300?'+Math.floor(Math.random() * 10000)
+                imageUrl: formData.get('image'),
+                creatorSlug: githubUser
               }
 
-              setCommunities([...communities,community])
-              console.log(communities);
+              fetch('/api/communities', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(community)
+              })
+              .then(async (response) => {
+                const data = await response.json();
+                setCommunities([...communities,data.createdRegister])
+              })
             }}>
               <div>
                 <input
@@ -105,9 +141,8 @@ export default function Home() {
           </Box>
       </div>
       <div className="profileRelationsArea" style={{ gridArea: 'profileRelationsArea' }}>
-        <CardsBox title={'Seguidores'} itemsList={followers} />
-        <CardsBox title={'Comunidades'} itemsList={communities} />
-        <CardsBox title={'Pessoas da comunidade'} itemsList={communityPerson} />
+        <CardsBox title={'Seguidores'} link={'user'} itemsList={followers} />
+        <CardsBox title={'Comunidades'} link={'community'} itemsList={communities} />
       </div>
     </MainGrid>
     </>
