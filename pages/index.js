@@ -52,7 +52,7 @@ export default function Home() {
       { 
         method: 'POST',
         headers: {
-          'Authorization': process.env.DATOCMS_READONLY_API_KEY,
+          'Authorization': process.env.NEXT_PUBLIC_DATOCMS_READONLY_API_KEY,
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         },
